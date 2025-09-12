@@ -11,7 +11,7 @@ $ xkcd -h
 Usage of xkcd:
   -c int
         max number of concurrent http requests when building offline index (default 20)
-  -i string
+  -f string
         file holding offline index of comics (default "xkcd.json")
   -t    print also the transcript
 
