@@ -17,7 +17,7 @@ func main() {
 	log.SetPrefix("xkcd: ")
 
 	maxConcurrency := flag.Int("c", 20, "max number of concurrent http requests when building offline index")
-	indexFile := flag.String("i", "xkcd.json", "file holding offline index of comics")
+	indexFile := flag.String("f", "xkcd.json", "file holding offline index of comics")
 	printTranscript := flag.Bool("t", false, "print also the transcript")
 	flag.Parse()
 
@@ -28,9 +28,7 @@ func main() {
 
 	index := xkcd.NewIndex(*indexFile)
 	if err := index.Build(*maxConcurrency); err != nil {
-		if errors.Is(err, fs.ErrExist) {
-			log.Printf("%q already exists, skipping index building\n", *indexFile)
-		} else {
+		if !errors.Is(err, fs.ErrExist) {
 			log.Fatalf("building index: %v", err)
 		}
 	}
