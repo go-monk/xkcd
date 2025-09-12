@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -74,8 +75,14 @@ func NewIndex(filename string) *Index {
 }
 
 // Build fetches all comics from 1 to the latest and saves them as JSON to the
-// index. The maxConcurrency limits the number of concurrent HTTP requests.
+// index filename. If the filename already exists fs.ErrExist is returned and no
+// building happens. The maxConcurrency limits the number of concurrent HTTP
+// requests.
 func (idx *Index) Build(maxConcurrency int) error {
+	if _, err := os.Stat(idx.filename); err == nil {
+		return fs.ErrExist
+	}
+
 	var comics []Comic
 
 	latestComicNum, err := fetchLatestNum()

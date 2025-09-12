@@ -1,10 +1,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
-	"os"
 	"sort"
 	"strings"
 
@@ -26,15 +27,13 @@ func main() {
 	term := strings.Join(flag.Args(), " ")
 
 	index := xkcd.NewIndex(*indexFile)
-
-	if _, err := os.Stat(*indexFile); os.IsNotExist(err) {
-		log.Printf("building index at %q ...\n", *indexFile)
-		err := index.Build(*maxConcurrency)
-		if err != nil {
-			log.Fatalf("bulding index: %v", err)
+	if err := index.Build(*maxConcurrency); err != nil {
+		if errors.Is(err, fs.ErrExist) {
+			log.Printf("%q already exists, skipping index building\n", *indexFile)
+		} else {
+			log.Fatalf("building index: %v", err)
 		}
 	}
-
 	comics, err := index.Search(term)
 	if err != nil {
 		log.Fatalf("searching index: %v", err)
