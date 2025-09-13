@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -17,7 +19,7 @@ func main() {
 	log.SetPrefix("xkcd: ")
 
 	maxConcurrency := flag.Int("c", 20, "max number of concurrent http requests when building offline index")
-	indexFile := flag.String("f", "xkcd.json", "file holding offline index of comics")
+	indexFile := flag.String("f", filepath.Join(os.TempDir(), "xkcd.json"), "file holding offline index of comics")
 	printTranscript := flag.Bool("t", false, "print also the transcript")
 	flag.Parse()
 
