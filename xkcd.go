@@ -83,12 +83,12 @@ func (idx *Index) Build(maxConcurrency int) error {
 		return fs.ErrExist
 	}
 
-	var comics []Comic
-
 	latestComicNum, err := fetchLatestNum()
 	if err != nil {
 		return fmt.Errorf("getting latest comic number: %v", err)
 	}
+
+	comicsChan := make(chan Comic, latestComicNum)
 
 	var tokens = make(chan struct{}, maxConcurrency)
 	var wg sync.WaitGroup
@@ -104,10 +104,19 @@ func (idx *Index) Build(maxConcurrency int) error {
 				log.Printf("fetching comic %s: %v", u, err)
 				return
 			}
-			comics = append(comics, *c)
+			comicsChan <- *c
 		}(i)
 	}
-	wg.Wait()
+
+	go func() {
+		wg.Wait()
+		close(comicsChan)
+	}()
+
+	var comics []Comic
+	for c := range comicsChan {
+		comics = append(comics, c)
+	}
 
 	f, err := os.Create(idx.filename)
 	if err != nil {
